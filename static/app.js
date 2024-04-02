@@ -1,6 +1,11 @@
 // json url
 const url = "https://static.bc-edx.com/data/dl-1-2/m14/lms/starter/samples.json"
 
+//Fetch JSON data and console log it
+let data = d3.json(url).then(function(data) {
+    console.log(data);
+});
+
 // initialize function to pull ID numbers
 function init() {
     var dropDown = d3.select("#selDataset");
