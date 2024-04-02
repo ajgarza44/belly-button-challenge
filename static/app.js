@@ -1,212 +1,122 @@
-// Use the D3 library to read in json from URL
+// json url
 const url = "https://static.bc-edx.com/data/dl-1-2/m14/lms/starter/samples.json"
-
-
-//Fetch the JSON data and console log it
-let data = d3.json(url).then(function(data) {
-    console.log(data);
-});
-
-//Create function to initialize dashboard at startup
-function init () {
-    //Select dropdown menu with D#
-    let dropdownMenu = d3.select("#selDataset");
-    //Populate dropdown menu with id's
-    d3.json(url).then(function(data) {
-        let sampleNames = data.names;
-        //Iterate through array and log/append each name
-        sampleNames.forEach((name) => {
-            //Print in console to check
-            //console.log(name)
-            //Append each value to populate dropdown menu
-            dropdownMenu.append("option")
-            .text(name)
-            .property("value", name);
+// initialize function to pull ID numbers
+function init() {
+    var dropDown = d3.select("#selDataset");
+    // retrieve JSON data
+    d3.json(url).then(function (data) {
+        var sampleId = data.names;
+        sampleId.forEach((sample) => {
+            dropDown.append("option").text(sample).property("value", sample)
         });
-
-            //Call first sample from list
-            let firstSample = sampleNames[0]
-            //console.log(firstSample)
-
-            //Call first plots to initialize
-            buildBarPlot(firstSample);
-            buildBubblePlot(firstSample);
-            buildMetadata(firstSample);
-    });
-
-};
-
-init()
-
-//Create function to build metadata panel
-function buildMetadata (sampleID) {
-    //Call json data
-    d3.json(url).then(function(data) {
-        let metadata = data.metadata;
-
-        //Filter data to get values for each sample
-        let sampleArray = metadata.filter(sample => sample.id == sampleID);
-        //Set first object in sample array to variable
-        let sample = sampleArray[0];
-
-        //Select panel from html and set to variable
-        let panel = d3.select("#sample-metadata");
-        panel.html("");
-        //Loop through each key and append data to panel
-        for (key in sample) {
-            panel.append("h6").text(key.toUpperCase()+": "+sample[key])
-        }
-    })
-}
-
-//Function that builds bar plot
-function buildBarPlot (sampleID) {
-    d3.json(url).then(function(data) {
-        let samples = data.samples;
-
-    //Filter data to get values for each sample
-    let sampleArray = samples.filter(sample => sample.id == sampleID);
-    let sample = sampleArray[0];
-    
-    //Assign variables to sample values
-    let otu_ids = sample.otu_ids
-    let sample_values = sample.sample_values
-    let otu_labels = sample.otu_labels
-    
-    //Set variable for plot values
-    let trace1 = [
-        {x: sample_values.slice(0,10).reverse(),
-        y: otu_ids.slice(0,10).map(otu_id => "OTU "+otu_id).reverse(),
-        text: otu_labels.slice(0,10).reverse(),
-        type:"bar",
-        orientation:"h" }
-    ];
-    //Define layout
-    let layout = {
-        title:""
-    };
-
-    //Call Plotly to plot 
-    Plotly.newPlot("bar", trace1, layout)
-
-    });
-
-};
-
-//Function that builds bar plot
-function buildBarPlot (sampleID) {
-    d3.json(url).then(function(data) {
-        let samples = data.samples;
-
-    //Filter data to get values for each sample
-    let sampleArray = samples.filter(sample => sample.id == sampleID);
-    let sample = sampleArray[0];
-    
-    //Assign variables to sample values
-    let otu_ids = sample.otu_ids
-    let sample_values = sample.sample_values
-    let otu_labels = sample.otu_labels
-    
-    //Set variable for plot values
-    let trace1 = [
-        {x: sample_values.slice(0,10).reverse(),
-        y: otu_ids.slice(0,10).map(otu_id => "OTU "+otu_id).reverse(),
-        text: otu_labels.slice(0,10).reverse(),
-        type:"bar",
-        orientation:"h" }
-    ];
-    //Define layout
-    let layout = {
-        title:""
-    };
-
-    //Call Plotly to plot 
-    Plotly.newPlot("bar", trace1, layout)
-
-    });
-
-};
-
-//Function that builds bubble plot
-function buildBubblePlot (sampleID) {
-    d3.json(url).then(function(data) {
-        let samples = data.samples;
-
-    //Filter data to get values for each sample
-    let sampleArray = samples.filter(sample => sample.id == sampleID);
-    let sample = sampleArray[0];
-    
-    //Assign variables to sample values
-    let otu_ids = sample.otu_ids
-    let sample_values = sample.sample_values
-    let otu_labels = sample.otu_labels
-    
-    //Set variable for plot values
-    let trace2 = [
-        {x: otu_ids,
-         y: sample_values,
-         text: otu_labels,
-         mode:"markers",
-         marker:{
-            size: sample_values, 
-            color: otu_ids,
-            colorscale: "Earth"
-         }
-         
-        }];
-
-    //Define layout
-    let layout = {
-        xaxis: {title:"OTU ID"}
-    };
-    //Call Plotly to plot
-    Plotly.newPlot("bubble", trace2, layout)
-
+        var initSample = sampleId[0];
+        buildDemo(initSample);
+        buildCharts(initSample);
     });
 };
 
+// build function to create charts 
+function buildCharts(sample) {
+    d3.json(url).then(function (data) {
+        // variables for charts
+        var allSamples = data.samples;
+        var sampleInfo = allSamples.filter(row => row.id == sample);
+        var sampleValues = sampleInfo[0].sample_values;
+        var sampleValuesSlice = sampleValues.slice(0,10).reverse();
+        var otuIds = sampleInfo[0].otu_ids;
+        var otuIdsSlice = otuIds.slice(0,10).reverse();
+        var otuLabels = sampleInfo[0].otu_labels;
+        var otuLabelsSlice = otuLabels.slice(0,10).reverse();
+        var metaData = data.metadata;
+        var metaDataSample = metaData.filter(row => row.id == sample);
+        var wash = metaDataSample[0].wfreq;
 
-//Function that builds bubble plot
-function buildBubblePlot (sampleID) {
-    d3.json(url).then(function(data) {
-        let samples = data.samples;
+        // build chart 1
+        var trace1 = {
+            x: sampleValuesSlice,
+            y: otuIdsSlice.map(item => `OTU ${item}`),
+            type: "bar",
+            orientation: "h",
+            text: otuLabelsSlice,
+        };
+        var data = [trace1];
+        Plotly.newPlot("bar", data)
 
-    //Filter data to get values for each sample
-    let sampleArray = samples.filter(sample => sample.id == sampleID);
-    let sample = sampleArray[0];
-    
-    //Assign variables to sample values
-    let otu_ids = sample.otu_ids
-    let sample_values = sample.sample_values
-    let otu_labels = sample.otu_labels
-    
-    //Set variable for plot values
-    let trace2 = [
-        {x: otu_ids,
-         y: sample_values,
-         text: otu_labels,
-         mode:"markers",
-         marker:{
-            size: sample_values, 
-            color: otu_ids,
-            colorscale: "Earth"
-         }
-         
-        }];
+        // build chart 2 
+        var trace2 = {
+            x: otuIds,
+            y: sampleValues,
+            mode: "markers",
+            marker: {
+                size: sampleValues,
+                color: otuIds,
+                colorscale: "Earth"
+            },
+            text: otuIds
+        };
+        var data2 = [trace2];
+        var layout = {
+            showlegend: false
+        };
 
-    //Define layout
-    let layout = {
-        xaxis: {title:"OTU ID"}
-    };
-    //Call Plotly to plot
-    Plotly.newPlot("bubble", trace2, layout)
+        Plotly.newPlot("bubble", data2, layout);
 
+        // build chart 3; gauge chart adapted from plotly
+        var data3 = [
+            {
+              domain: { x: [0, 1], y: [0, 1] },
+              value: wash,
+              title: {text: "<b>Belly Button Washing Frequency</b> <br> Scrubs per Week" },
+              type: "indicator",
+              mode: "gauge+number",
+              gauge: {
+                axis: { range: [null, 9] },
+                bar: { color: "black" },
+                steps: [
+                  { range: [0, 1], color: "rgba(114, 70, 28, 0.9)" },
+                  { range: [1, 2], color: "rgba(169, 146, 48, 0.9)" },
+                  { range: [2, 3], color: "rgba(199, 188, 58, 0.9)" },
+                  { range: [3, 4], color: "rgba(221, 226, 68, 0.9)" },
+                  { range: [4, 5], color: "rgba(66, 206, 58, 0.9)" },
+                  { range: [5, 6], color: "rgba(29, 184, 122, 0.9)" },
+                  { range: [6, 7], color: "rgba(15, 155, 165, 0.9)" },
+                  { range: [7, 8], color: "rgba(11, 117, 154, 0.9)" },
+                  { range: [8, 9], color: "rgba(0, 34, 125, 0.9)" },
+                ],
+                threshold: {
+                  line: { color: "black", width: 4 },
+                  thickness: 0.75,
+                  value: wash
+                }
+              }
+            }
+          ];
+          
+          var layout2 = { width: 600, height: 450, margin: { t: 0, b: 0 } };
+          Plotly.newPlot('gauge', data3, layout2);
     });
 };
 
-//Function that updates plots on change
-function optionChanged(sampleID) {
-    buildMetadata(sampleID);
-    buildBarPlot(sampleID);
-    buildBubblePlot(sampleID);
-};   
+// build demographic info/metadata for each subject
+function buildDemo(sample) {
+    var demo = d3.select("#sample-metadata");
+    d3.json(url).then(function (data) {
+        var metaData = data.metadata;
+        var metaDataSample = metaData.filter(row => row.id == sample);
+        demo.selectAll("p").remove();
+        metaDataSample.forEach((row) => {
+            for (const [key, value] of Object.entries(row)) {
+                demo.append("p").text(`${key}: ${value}`);
+            };
+        });
+    });
+};
+
+// 
+function optionChanged(sample) {
+    buildDemo(sample);
+    buildCharts(sample);
+};
+
+// call initialize function to run
+init();
